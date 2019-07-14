@@ -44,11 +44,11 @@ along with this program.  If not, see
     var _todayClass = 'ui-state-highlight';
     var _selectedClass = 'ui-state-active';
     var _defaultClass = 'ui-state-default';
-    var _defaultPos = { my: 'left top+1', at: 'left bottom' };
-    var _RTL_defaultPos = { my: 'right top+1', at: 'right bottom' };
+    var _defaultPos = {my: 'left top+1', at: 'left bottom'};
+    var _RTL_defaultPos = {my: 'right top+1', at: 'right bottom'};
     var _posErr = _setupErr + 'The jQuery UI position plug-in must be loaded.';
     var _badOptValErr = _setupErr + 'Unsupported % option value, supported values are: ';
-    var _badMinMaxVal =  _setupErr + '"_" is not a valid %Month value.';
+    var _badMinMaxVal = _setupErr + '"_" is not a valid %Month value.';
     var _openedInstance = null;
     var _hasPosition = !!$.ui.position;
     var _animVals = {
@@ -68,7 +68,9 @@ along with this program.  If not, see
         StartYear: '_setPickerYear',
         MinMonth: '_setMinMonth',
         MaxMonth: '_setMaxMonth',
-        SelectedMonth: '_setSelectedMonth'
+        SelectedMonth: '_setSelectedMonth',
+        Multiple: '_Multiple',
+        Separator: '_Separator'
     };
     var $noop = $.noop;
     var $proxy = $.proxy;
@@ -87,9 +89,9 @@ along with this program.  If not, see
         $(this).addClass(_selectedClass);
     }
 
-    function _setActive( el, state ) {
-        return el[ state ? 'on' : 'off' ]('mousenter mouseout',  _stayActive )
-              .toggleClass(_selectedClass, state);
+    function _setActive(el, state) {
+        return el[state ? 'on' : 'off']('mousenter mouseout', _stayActive)
+            .toggleClass(_selectedClass, state);
     }
 
     function _between(month, from, until) {
@@ -127,10 +129,10 @@ along with this program.  If not, see
         _json = _json.replace(/m/i, '":"m"');
 
         try {
-            var _rev = JSON.parse( '{"' + _json.replace(/ /g, ',"') + '}' ), obj = {};
+            var _rev = JSON.parse('{"' + _json.replace(/ /g, ',"') + '}'), obj = {};
 
             for (var key in _rev) {
-                obj[ _rev[key] ] = key;
+                obj[_rev[key]] = key;
             }
 
             var _month = _toMonth(new Date);
@@ -184,16 +186,16 @@ along with this program.  If not, see
 
     var _markup =
         '<div class="ui-widget-header month-picker-header ui-corner-all">' +
-            '<table class="month-picker-year-table">' +
-                '<tr>' +
-                    '<td class="month-picker-previous"><a /></td>' +
-                    '<td class="month-picker-title"><a /></td>' +
-                    '<td class="month-picker-next"><a /></td>' +
-                '</tr>' +
-            '</table>' +
+        '<table class="month-picker-year-table">' +
+        '<tr>' +
+        '<td class="month-picker-previous"><a /></td>' +
+        '<td class="month-picker-title"><a /></td>' +
+        '<td class="month-picker-next"><a /></td>' +
+        '</tr>' +
+        '</table>' +
         '</div>' +
         '<div>' +
-            '<table class="month-picker-month-table" />' +
+        '<table class="month-picker-month-table" />' +
         '</div>';
 
     // Groups state and functionallity to fade in the jump years hint
@@ -203,62 +205,62 @@ along with this program.  If not, see
     // 2: Assumes that there is no previous hint applied to the
     //    button (it dosen't remove the existing hint).
     function _applyButtonHint(_button, _hintText) {
-      var _speed = 125, _currentLabel, _startTimeout, _labelElem = $();
+        var _speed = 125, _currentLabel, _startTimeout, _labelElem = $();
 
-      _button.on('mouseenter' + _eventsNs + 'h', _prepareToStart);
+        _button.on('mouseenter' + _eventsNs + 'h', _prepareToStart);
 
-      // Setp 1: Wait to make sure the user isn't just mousing over and
-      // away from the button.
-      // NOTE: If _fadeOutHint() is triggered on mouseleave before the
-      // timeout is triggered the animation is canceled.
-      function _prepareToStart() {
-        _startTimeout = setTimeout(_fadeOutLabel, 175);
-      }
-
-      // Setp 2: Fade out the label (Year 2016) text to 45%.
-      function _fadeOutLabel() {
-        _startTimeout = null;
-        _labelElem = $('span', _button).animate({ opacity: 0.45 }, _speed, _fadeInHint);
-      }
-
-      // Setp 3: Fade in the hint text (Jump years).
-      function _fadeInHint() {
-        _currentLabel = _labelElem.text();
-        _labelElem.animate({ opacity: 1 }, _speed).text(_hintText);
-      }
-
-      _button.on('mouseleave' + _eventsNs + 'h', _fadeOutHint);
-
-      function _fadeOutHint() {
-        if (_startTimeout) {
-          // If the user is just moving over and away from the button, cancel
-          // the animation completely.
-          clearTimeout(_startTimeout);
-        } else {
-          // Setp 4: Fade out the hint text (Jump years) to 45%.
-          _labelElem = $('span', _button).animate({ opacity: 0.45 }, _speed, _fadeInLabel);
+        // Setp 1: Wait to make sure the user isn't just mousing over and
+        // away from the button.
+        // NOTE: If _fadeOutHint() is triggered on mouseleave before the
+        // timeout is triggered the animation is canceled.
+        function _prepareToStart() {
+            _startTimeout = setTimeout(_fadeOutLabel, 175);
         }
-      }
 
-      // Setp 5: Fade in the label (Year 2016) text.
-      function _fadeInLabel() {
-        _labelElem.text( _currentLabel ).animate({opacity: 1}, _speed);
-      }
+        // Setp 2: Fade out the label (Year 2016) text to 45%.
+        function _fadeOutLabel() {
+            _startTimeout = null;
+            _labelElem = $('span', _button).animate({opacity: 0.45}, _speed, _fadeInHint);
+        }
 
-      // Adds a function to the button elemene which is called when the
-      // user clicks the button (the hint needs to be removed).
-      _button.data(_clearHint, function() {
-        clearTimeout(_startTimeout);
-        _labelElem.stop().css({ opacity: 1 });
-        _button.off(_eventsNs + 'h');
-      });
+        // Setp 3: Fade in the hint text (Jump years).
+        function _fadeInHint() {
+            _currentLabel = _labelElem.text();
+            _labelElem.animate({opacity: 1}, _speed).text(_hintText);
+        }
+
+        _button.on('mouseleave' + _eventsNs + 'h', _fadeOutHint);
+
+        function _fadeOutHint() {
+            if (_startTimeout) {
+                // If the user is just moving over and away from the button, cancel
+                // the animation completely.
+                clearTimeout(_startTimeout);
+            } else {
+                // Setp 4: Fade out the hint text (Jump years) to 45%.
+                _labelElem = $('span', _button).animate({opacity: 0.45}, _speed, _fadeInLabel);
+            }
+        }
+
+        // Setp 5: Fade in the label (Year 2016) text.
+        function _fadeInLabel() {
+            _labelElem.text(_currentLabel).animate({opacity: 1}, _speed);
+        }
+
+        // Adds a function to the button elemene which is called when the
+        // user clicks the button (the hint needs to be removed).
+        _button.data(_clearHint, function () {
+            clearTimeout(_startTimeout);
+            _labelElem.stop().css({opacity: 1});
+            _button.off(_eventsNs + 'h');
+        });
     } // End _applyButtonHint()
 
     function _setDisabled(_button, _value) {
-      var _btnWidget = _button.data('ui-button');
-      if (_btnWidget.option('disabled') !== _value) {
-        _btnWidget.option('disabled', _value);
-      }
+        var _btnWidget = _button.data('ui-button');
+        if (_btnWidget.option('disabled') !== _value) {
+            _btnWidget.option('disabled', _value);
+        }
     }
 
     $.widget("KidSysco.MonthPicker", {
@@ -283,7 +285,9 @@ along with this program.  If not, see
             MaxMonth: null,
             Duration: 'normal',
             Button: _makeDefaultButton,
-            ButtonIcon: 'ui-icon-calculator'
+            ButtonIcon: 'ui-icon-calculator',
+            Multiple: false,
+            Separator: ','
         },
 
         _monthPickerButton: $(),
@@ -316,7 +320,7 @@ along with this program.  If not, see
             this._validationMessage.remove();
 
             if (_openedInstance === this) {
-              _openedInstance = null;
+                _openedInstance = null;
             }
         },
 
@@ -335,7 +339,7 @@ along with this program.  If not, see
                 case 'MonthFormat':
                     var date = this.GetSelectedDate();
                     if (date) {
-                        this.element.val( this.FormatMonth(date, value) );
+                        this.element.val(this.FormatMonth(date, value));
                     }
                     break;
             }
@@ -351,7 +355,7 @@ along with this program.  If not, see
             // In jQuery UI 1.9 and above, you use the _super method instead.
             this._super(key, value);
 
-            _setOptionHooks[key] ? this[ _setOptionHooks[key] ](value) : 0;
+            _setOptionHooks[key] ? this[_setOptionHooks[key]](value) : 0;
         },
 
         _create: function () {
@@ -367,7 +371,7 @@ along with this program.  If not, see
             // This is only noticable in the real version of IE8, emulated versions
             // from the dev tools in modern browsers do not suffer from this issue.
             // if (!_el.is('input,div,span') || $.inArray(_el.attr('type'), ['text', 'month', void 0]) === -1) {
-            if (!_el.is('input,div,span') || (_type !== 'text' && _type !== 'month' && _type !==  void 0)) {
+            if (!_el.is('input,div,span') || (_type !== 'text' && _type !== 'month' && _type !== void 0)) {
                 var error = _setupErr + 'MonthPicker can only be called on text or month inputs.';
                 // Call alert first so that IE<10 won't trip over console.log and swallow all errors.
                 alert(error + ' \n\nSee (developer tools) for more details.');
@@ -405,24 +409,24 @@ along with this program.  If not, see
             var isInline = _isInline(_el);
 
             $(_markup).appendTo(_menu);
-            _menu.appendTo( isInline ? _el : document.body );
+            _menu.appendTo(isInline ? _el : document.body);
 
             this._titleButton =
                 $('.month-picker-title', _menu)
-                .click($proxy(this._showYearsClickHandler, this))
-                .find('a').jqueryUIButton()
-                .removeClass(_defaultClass);
+                    .click($proxy(this._showYearsClickHandler, this))
+                    .find('a').jqueryUIButton()
+                    .removeClass(_defaultClass);
 
             this._applyJumpYearsHint();
             this._createValidationMessage();
 
             this._prevButton = $('.month-picker-previous>a', _menu)
-              .jqueryUIButton({ text: false })
-              .removeClass(_defaultClass);
+                .jqueryUIButton({text: false})
+                .removeClass(_defaultClass);
 
             this._nextButton = $('.month-picker-next>a', _menu)
-              .jqueryUIButton({ text: false })
-              .removeClass(_defaultClass);
+                .jqueryUIButton({text: false})
+                .removeClass(_defaultClass);
 
             this._setRTL(_opts.IsRTL); //Assigns icons to the next/prev buttons.
 
@@ -447,8 +451,8 @@ along with this program.  If not, see
             // Checks and initailizes Min/MaxMonth properties
             // (creates _setMinMonth and _setMaxMonth methods).
             var me = this, Month = 'Month';
-            $.each(['Min', 'Max'], function(i, type) {
-                me["_set" + type + Month] = function(val) {
+            $.each(['Min', 'Max'], function (i, type) {
+                me["_set" + type + Month] = function (val) {
                     if ((me['_' + type + Month] = _encodeMonth(me, val)) === false) {
                         alert(_badMinMaxVal.replace(/%/, type).replace(/_/, val));
                     }
@@ -460,7 +464,7 @@ along with this program.  If not, see
             var _selMonth = _opts.SelectedMonth;
             if (_selMonth !== void 0) {
                 var month = _encodeMonth(this, _selMonth);
-                _el.val( this._formatMonth(new Date( _toYear(month), month % 12, 1)) );
+                _el.val(this._formatMonth(new Date(_toYear(month), month % 12, 1)));
             }
 
             this._updateAlt();
@@ -472,10 +476,10 @@ along with this program.  If not, see
             if (isInline) {
                 this.Open();
             } else {
-               // Update the alt field if the user manually changes
-               // the input field.
-               _el.addClass(_textfieldClass);
-               _el.change($proxy(this._updateAlt, this));
+                // Update the alt field if the user manually changes
+                // the input field.
+                _el.addClass(_textfieldClass);
+                _el.change($proxy(this._updateAlt, this));
             }
         },
 
@@ -492,10 +496,10 @@ along with this program.  If not, see
 
         GetSelectedMonth: function () {
             var date = this.GetSelectedDate();
-            return date ? date.getMonth()+1 : NaN;
+            return date ? date.getMonth() + 1 : NaN;
         },
 
-        Validate: function() {
+        Validate: function () {
             var _date = this.GetSelectedDate();
 
             if (this.options.ValidationErrorMessage !== null && !this.options.Disabled) {
@@ -562,7 +566,7 @@ along with this program.  If not, see
 
                     _openedInstance = this;
                     $(document).on('mousedown' + _eventsNs + this.uuid, $proxy(this.Close, this))
-                               .on('keydown' + _eventsNs + this.uuid, $proxy(this._keyDown, this));
+                        .on('keydown' + _eventsNs + this.uuid, $proxy(this._keyDown, this));
 
                     // Trun off validation so that clicking one of the months
                     // won't blur the input field and trogger vlaidation
@@ -576,10 +580,10 @@ along with this program.  If not, see
                     // jQuery UI overrides jQuery.show and dosen't
                     // call the start callback.
                     // see: http://api.jqueryui.com/show/
-                    _menu[ _noAnim ? 'fadeIn' : _anim ]({
-                       duration: _noAnim ? 0 : this._duration(),
-                       start: $proxy(this._position, this, _menu),
-                       complete: _event('OnAfterMenuOpen', this)
+                    _menu[_noAnim ? 'fadeIn' : _anim]({
+                        duration: _noAnim ? 0 : this._duration(),
+                        start: $proxy(this._position, this, _menu),
+                        complete: _event('OnAfterMenuOpen', this)
                     });
                 }
             }
@@ -599,14 +603,14 @@ along with this program.  If not, see
                 // If the menu is closed while in jump years mode, bring back
                 // the jump years hint.
                 if (this._backToYear) {
-                  this._applyJumpYearsHint();
-                  this._backToYear = 0;
+                    this._applyJumpYearsHint();
+                    this._backToYear = 0;
                 }
 
                 this._visible = false;
                 _openedInstance = null;
                 $(document).off('keydown' + _eventsNs + this.uuid)
-                           .off('mousedown' + _eventsNs + this.uuid);
+                    .off('mousedown' + _eventsNs + this.uuid);
 
                 this.Validate();
                 _elem.on('blur' + _eventsNs, $proxy(this.Validate, this));
@@ -616,7 +620,7 @@ along with this program.  If not, see
                 if (_anim === 'none') {
                     _menu.hide(0, _callback);
                 } else {
-                    _menu[ _anim ](this._duration(), _callback);
+                    _menu[_anim](this._duration(), _callback);
                 }
             }
         },
@@ -649,8 +653,8 @@ along with this program.  If not, see
             var month = _encodeMonth(this, _selMonth), _el = this.element;
 
             if (month) {
-                var date = new Date( _toYear(month), month % 12, 1 );
-                _el.val( this._formatMonth( date ) );
+                var date = new Date(_toYear(month), month % 12, 1);
+                _el.val(this._formatMonth(date));
 
                 this._updateAlt(0, date);
                 this._validationMessage.hide();
@@ -662,18 +666,18 @@ along with this program.  If not, see
             this._showMonths();
         },
 
-        _applyJumpYearsHint: function() {
-          _applyButtonHint(this._titleButton, this._i18n('jumpYears'));
+        _applyJumpYearsHint: function () {
+            _applyButtonHint(this._titleButton, this._i18n('jumpYears'));
         },
 
-        _i18n: function(str) {
-          var _trans = this.options.i18n[str];
+        _i18n: function (str) {
+            var _trans = this.options.i18n[str];
 
-          if (typeof _trans === 'undefined') {
-            return $.MonthPicker.i18n[str];
-          } else {
-            return _trans;
-          }
+            if (typeof _trans === 'undefined') {
+                return $.MonthPicker.i18n[str];
+            } else {
+                return _trans;
+            }
         },
 
         _parseMonth: function (str, format) {
@@ -719,15 +723,15 @@ along with this program.  If not, see
 
             var _removeOldBtn = false;
             this._monthPickerButton = ( _btnOpt instanceof $ ? _btnOpt : $(_btnOpt) )
-                .each(function() {
+                .each(function () {
                     if (!$.contains(document.body, this)) {
                         _removeOldBtn = true;
                         $(this).insertAfter(_elem);
                     }
                 })
                 .on(click, $proxy(this.Toggle, this))
-                .on('mousedown' + _eventsNs, function(r) {
-                  r.preventDefault();
+                .on('mousedown' + _eventsNs, function (r) {
+                    r.preventDefault();
                 });
 
             if (this._removeOldBtn) {
@@ -759,9 +763,9 @@ along with this program.  If not, see
             }
         },
 
-        _setRTL: function(value) {
-            _applyArrowButton( this._prevButton.css('float', value ? 'right' : 'left'), !value );
-            _applyArrowButton( this._nextButton.css('float', value ? 'left' : 'right'), value );
+        _setRTL: function (value) {
+            _applyArrowButton(this._prevButton.css('float', value ? 'right' : 'left'), !value);
+            _applyArrowButton(this._nextButton.css('float', value ? 'left' : 'right'), value);
         },
 
         _keyDown: function (event) {
@@ -780,31 +784,31 @@ along with this program.  If not, see
             }
         },
 
-        _duration: function() {
+        _duration: function () {
             var _dur = this.options.Duration;
 
             if ($.isNumeric(_dur)) {
                 return _dur;
             }
 
-            return _dur in _speeds ? _speeds[ _dur ] : _speeds._default;
+            return _dur in _speeds ? _speeds[_dur] : _speeds._default;
         },
 
         _position: _hasPosition ?
-            function($menu) {
+            function ($menu) {
                 var _defauts = this.options.IsRTL ? _RTL_defaultPos : _defaultPos;
                 var _posOpts = $.extend(_defauts, this.options.Position);
 
                 // Only in IE and jQuery 1.12.0 or 2.2.0, .position() will add scrollTop to the top coordinate (#40)
                 return $menu.position($.extend({of: this.element}, _posOpts));
             } :
-            function($menu) {
+            function ($menu) {
                 // Only in IE and jQuery 1.12.0 or 2.2.0, .offset() will add scrollTop to the top coordinate (#40)
                 var _el = this.element,
-                    _css = { top: (_el.offset().top + _el.height() + 7) + 'px' };
+                    _css = {top: (_el.offset().top + _el.height() + 7) + 'px'};
 
                 if (this.options.IsRTL) {
-                    _css.left = (_el.offset().left-$menu.width()+_el.width() + 7) + 'px';
+                    _css.left = (_el.offset().left - $menu.width() + _el.width() + 7) + 'px';
                 } else {
                     _css.left = _el.offset().left + 'px';
                 }
@@ -816,11 +820,12 @@ along with this program.  If not, see
             if (!this._isMonthInputType) {
                 try {
                     if (this.options.UseInputMask) {
-                        this.element.mask( this._formatMonth(new Date).replace(/\d/g, 9) );
+                        this.element.mask(this._formatMonth(new Date).replace(/\d/g, 9));
                     } else {
                         this.element.unmask();
                     }
-                } catch (e) {}
+                } catch (e) {
+                }
             }
         },
 
@@ -847,7 +852,7 @@ along with this program.  If not, see
 
         _setPickerYear: function (year) {
             this._pickerYear = year || new Date().getFullYear();
-            this._titleButton.jqueryUIButton({ label: this._i18n('year') + ' ' + this._pickerYear });
+            this._titleButton.jqueryUIButton({label: this._i18n('year') + ' ' + this._pickerYear});
         },
 
         // When calling this method with a falsy (undefined) date
@@ -858,18 +863,25 @@ along with this program.  If not, see
         _updateAlt: function (noop, date) {
             var _field = $(this.options.AltField);
             if (_field.length) {
-                _field.val( this._formatMonth(date, this.options.AltFormat) );
+                _field.val(this._formatMonth(date, this.options.AltFormat));
             }
         },
 
         _chooseMonth: function (month) {
             var _year = this._getPickerYear();
-            var date = new Date(_year, month-1);
-            this.element.val(this._formatMonth( date )).blur();
+            var date = new Date(_year, month - 1);
+            var current_value = this.element.val();
+            var updated_value;
+            if (this.options.Multiple) {
+                updated_value = current_value ? current_value + this.options.Separator + this._formatMonth(date) : this._formatMonth(date);
+            } else {
+                updated_value = this._formatMonth(date);
+            }
+            this.element.val(updated_value).blur();
             this._updateAlt(0, date);
 
-            _setActive( this._selectedBtn, false );
-            this._selectedBtn = _setActive( $(this._buttons[month-1]), true );
+            _setActive(this._selectedBtn, false);
+            this._selectedBtn = _setActive($(this._buttons[month - 1]), true);
 
             _event('OnAfterChooseMonth', this)(date);
         },
@@ -900,9 +912,9 @@ along with this program.  If not, see
             this._buttons.off(_eventsNs);
 
             var me = this, _onMonthClick = $proxy(me._onMonthClick, me);
-            $.each(_months, function(index, monthName) {
+            $.each(_months, function (index, monthName) {
                 $(me._buttons[index])
-                    .on(click, {month: index+1}, _onMonthClick )
+                    .on(click, {month: index + 1}, _onMonthClick)
                     .jqueryUIButton('option', 'label', monthName);
             });
 
@@ -916,7 +928,7 @@ along with this program.  If not, see
                 this._showYears();
 
                 var _label = this._i18n('backTo') + ' ' + this._getPickerYear();
-                this._titleButton.jqueryUIButton({ label: _label }).data( _clearHint )();
+                this._titleButton.jqueryUIButton({label: _label}).data(_clearHint)();
 
                 _event('OnAfterChooseYears', this)();
             } else {
@@ -949,11 +961,11 @@ along with this program.  If not, see
                 .on(click, $proxy(this._addToYears, this, AMOUNT_TO_ADD));
 
             _setDisabled(this._prevButton, _minYear && (_firstYear - 1) < _minYear);
-            _setDisabled(this._nextButton, _maxYear && (_firstYear + 12) -1 > _maxYear);
+            _setDisabled(this._nextButton, _maxYear && (_firstYear + 12) - 1 > _maxYear);
 
             this._buttons.off(_eventsNs);
 
-            _setActive( this._selectedBtn, false );
+            _setActive(this._selectedBtn, false);
 
             var _selYear = this.GetSelectedYear();
             var _onClick = $proxy(this._onYearClick, this);
@@ -963,40 +975,40 @@ along with this program.  If not, see
             for (var _counter = 0; _counter < 12; _counter++) {
                 var _year = _currYear + _yearDifferential;
 
-                var _btn = $( this._buttons[_counter] ).jqueryUIButton({
-                        disabled: !_between(_year, _minYear, _maxYear),
-                        label: _year
-                    })
+                var _btn = $(this._buttons[_counter]).jqueryUIButton({
+                    disabled: !_between(_year, _minYear, _maxYear),
+                    label: _year
+                })
                     .toggleClass(_todayClass, _year === _thisYear && _todayWithinBounds) // Heighlight the current year.
-                    .on(click, { year: _year }, _onClick );
+                    .on(click, {year: _year}, _onClick);
 
-                 // Heighlight the selected year.
+                // Heighlight the selected year.
                 if (_selWithinBounds && _selYear && _selYear === _year) {
-                    this._selectedBtn = _setActive( _btn , true );
+                    this._selectedBtn = _setActive(_btn, true);
                 }
 
                 _yearDifferential++;
             }
         },
 
-        _onMonthClick: function(event) {
+        _onMonthClick: function (event) {
             this._chooseMonth(event.data.month);
             this.Close(event);
         },
 
-        _onYearClick: function(event) {
+        _onYearClick: function (event) {
             this._chooseYear(event.data.year);
         },
 
-        _addToYear: function(amount) {
-            this._setPickerYear( this._getPickerYear() + amount );
+        _addToYear: function (amount) {
+            this._setPickerYear(this._getPickerYear() + amount);
             this.element.focus();
             this._decorateButtons();
 
             _event('OnAfter' + (amount > 0 ? 'Next' : 'Previous') + 'Year', this)();
         },
 
-        _addToYears: function(amount) {
+        _addToYears: function (amount) {
             this._pickerYear = this._getPickerYear() + amount;
             this._showYears();
             this.element.focus();
@@ -1004,7 +1016,7 @@ along with this program.  If not, see
             _event('OnAfter' + (amount > 0 ? 'Next' : 'Previous') + 'Years', this)();
         },
 
-        _ajustYear: function(_opts) {
+        _ajustYear: function (_opts) {
             var _year = _opts.StartYear || this.GetSelectedYear() || new Date().getFullYear();
             if (this._MinMonth !== null) {
                 _year = Math.max(_toYear(this._MinMonth), _year);
@@ -1013,25 +1025,25 @@ along with this program.  If not, see
                 _year = Math.min(_toYear(this._MaxMonth), _year);
             }
 
-            this._setPickerYear( _year );
+            this._setPickerYear(_year);
         },
 
-        _decorateButtons: function() {
+        _decorateButtons: function () {
             var _curYear = this._getPickerYear(), _todaysMonth = _toMonth(new Date),
                 _minDate = this._MinMonth, _maxDate = this._MaxMonth;
 
             // Heighlight the selected month.
-            _setActive( this._selectedBtn, false );
+            _setActive(this._selectedBtn, false);
             var _sel = this.GetSelectedDate();
             var _withinBounds = _between(_sel ? _toMonth(_sel) : null, _minDate, _maxDate);
 
             if (_sel && _sel.getFullYear() === _curYear) {
-                this._selectedBtn = _setActive( $(this._buttons[_sel.getMonth()]) , _withinBounds );
+                this._selectedBtn = _setActive($(this._buttons[_sel.getMonth()]), _withinBounds);
             }
 
             // Disable the next/prev button if we've reached the min/max year.
-            _setDisabled(this._prevButton,  _minDate && _curYear == _toYear(_minDate));
-            _setDisabled(this._nextButton,  _maxDate && _curYear == _toYear(_maxDate));
+            _setDisabled(this._prevButton, _minDate && _curYear == _toYear(_minDate));
+            _setDisabled(this._nextButton, _maxDate && _curYear == _toYear(_maxDate));
 
             for (var i = 0; i < 12; i++) {
                 // Disable the button if the month is not between the
@@ -1039,7 +1051,7 @@ along with this program.  If not, see
                 var _month = (_curYear * 12) + i, _isBetween = _between(_month, _minDate, _maxDate);
 
                 $(this._buttons[i])
-                    .jqueryUIButton({ disabled: !_isBetween })
+                    .jqueryUIButton({disabled: !_isBetween})
                     .toggleClass(_todayClass, _isBetween && _month == _todaysMonth); // Highlights today's month.
             }
         }
